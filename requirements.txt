@@ -1,1 +1,12 @@
 Flask==3.0.3
+nltk
+langchain
+langchain-community
+langchain-chroma
+langchain-huggingface
+PyPDF2
+chromadb
+huggingface-hub
+python-dotenv
+transformers
+torch
