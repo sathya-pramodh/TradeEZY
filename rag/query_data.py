@@ -1,6 +1,6 @@
 import os
-import json
 import argparse
+from pymongo import MongoClient
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain.prompts import ChatPromptTemplate
@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 CHROMA_PATH = "chroma"
-MEMORY_FILE = "memory.json"
 
 PROMPT_TEMPLATE = """
 You are a helpful assistant. Answer the user's question using only the context provided below and the conversation history.
@@ -27,21 +26,28 @@ Question:
 Answer:
 """
 
-# Function to load memory from a file
-def load_memory():
-    if os.path.exists(MEMORY_FILE):
-        with open(MEMORY_FILE, "r") as file:
-            return json.load(file)
+# Function to load memory from MongoDB
+def load_memory(user_id):
+    client = MongoClient(os.getenv("MONGODB_URI"))
+    db = client.chatbot_db
+    collection = db.memory
+    memory_doc = collection.find_one({"user_id": user_id})
+    if memory_doc and "memory" in memory_doc:
+        return memory_doc["memory"]
     return []
 
-# Function to save memory to a file
-def save_memory(memory):
-    with open(MEMORY_FILE, "w") as file:
-        json.dump(memory, file, indent=4)
+# Function to save memory to MongoDB
+def save_memory(user_id, memory):
+    client = MongoClient(os.getenv("MONGODB_URI"))
+    db = client.chatbot_db
+    collection = db.memory
+    collection.update_one({"user_id": user_id}, {"$set": {"memory": memory}}, upsert=True)
 
 def main():
-    # Load persistent memory
-    memory = load_memory()
+    user_id = "user_1"  # Use a unique identifier for each user
+
+    # Load persistent memory from MongoDB
+    memory = load_memory(user_id)
 
     parser = argparse.ArgumentParser()
     parser.add_argument("query_text", type=str, help="The query text.")
@@ -100,9 +106,9 @@ def main():
     sources = [src for src in sources if src]
     unique_sources = list(dict.fromkeys(sources))
 
-    # Save the current interaction to memory
+    # Save the current interaction to memory in MongoDB
     memory.append({"user": query_text, "assistant": generated_text})
-    save_memory(memory)  # Persist updated memory
+    save_memory(user_id, memory)  # Persist updated memory
 
     # Format and print the response
     formatted_response = f"Response: {generated_text}\nSources: {unique_sources if unique_sources else 'No sources found.'}"
