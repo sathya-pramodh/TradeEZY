@@ -1,13 +1,8 @@
-from langchain_community.llms import HuggingFacePipeline
+from langchain.llms import HuggingFacePipeline
 from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
 from huggingface_hub import login
 
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
-
-login(token=os.getenv("HF_TOKEN"))
+login(token="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")
 
 
 def load_llama_model(model_name: str = "meta-llama/Llama-2-7b-hf", device: str = "cpu"):
@@ -35,16 +30,3 @@ def load_llama_model(model_name: str = "meta-llama/Llama-2-7b-hf", device: str =
     # Wrap the pipeline in a LangChain-compatible LLM
     llm = HuggingFacePipeline(pipeline=generation_pipeline)
     return llm
-
-
-# from llm_integration import load_llama_model
-
-
-# Load the LLaMA model
-llm = load_llama_model(model_name="meta-llama/Llama-2-7b-hf", device="cuda")
-
-
-# Query the model
-question = input("Enter your question: ")
-response = llm({"text": question})
-print(response)
