@@ -1,12 +1,12 @@
 "use client"
 import { useRouter } from "next/navigation"
-import React, { Usable } from "react"
+import React from "react"
 
 interface PageParams {
     grant: string
 }
 
-export default function GrantPage({ params }: { params: Usable<PageParams> }) {
+export default function GrantPage({ params }: { params: Promise<PageParams> }) {
     const grant = React.use(params).grant
     const router = useRouter()
 

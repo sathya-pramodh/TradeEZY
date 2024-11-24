@@ -1,12 +1,12 @@
 "use client"
 import { useRouter } from "next/navigation"
-import React, { Usable } from "react"
+import React from "react"
 
 interface PageParams {
     compliance: string
 }
 
-export default function CompliancePage({ params }: { params: Usable<PageParams> }) {
+export default function CompliancePage({ params }: { params: Promise<PageParams> }) {
     const compliance = React.use(params).compliance
     const router = useRouter()
 
